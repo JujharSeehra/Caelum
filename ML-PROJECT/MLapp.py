@@ -154,7 +154,7 @@ if physics is not None:
 
     })
 
-    st.dataframe(compare, use_container_width=True)
+    st.dataframe(compare, width='stretch')
 
     cost_error = abs(ml_cost-sim_cost)
 
@@ -200,7 +200,7 @@ if physics is not None:
 
         fig.update_layout(height=450)
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
 if physics is not None:
 
@@ -218,7 +218,7 @@ if physics is not None:
 
     pie.update_layout(height=500)
 
-    st.plotly_chart(    pie, use_container_width=True)
+    st.plotly_chart(    pie, width='stretch')
 
 if physics is not None:
 
@@ -248,7 +248,7 @@ if physics is not None:
 
         fig2.update_layout(height=450)
 
-        st.plotly_chart(fig2, use_container_width=True)
+        st.plotly_chart(fig2, width='stretch')
 
 if physics is not None:
 
@@ -306,7 +306,7 @@ if physics is not None:
 
     })
 
-    st.dataframe(summary,hide_index=True, use_container_width=True)
+    st.dataframe(summary,hide_index=True, width='stretch')
 
 
 if physics is not None:
@@ -434,19 +434,14 @@ profile_df=pd.DataFrame({
 
 })
 
-
-# CO2 concentration
-
 fig1=px.line(profile_df, x="Height (m)", y="CO2 Gas Concentration", title="CO₂ Concentration Through Absorber Height")
 
-st.plotly_chart(fig1, use_container_width=True)
+st.plotly_chart(fig1, width='stretch')
 
-
-# NaOH concentration
 
 fig2=px.line(profile_df, x="Height (m)", y="NaOH Concentration", title="NaOH Consumption Through Absorber")
 
-st.plotly_chart(fig2, use_container_width=True)
+st.plotly_chart(fig2, width='stretch')
 
 
 profile_df["Capture Efficiency (%)"] = (100*(1-profile_df["CO2 Gas Concentration"]/Cg0))
@@ -454,7 +449,7 @@ profile_df["Capture Efficiency (%)"] = (100*(1-profile_df["CO2 Gas Concentration
 
 fig3=px.line(profile_df, x="Height (m)", y="Capture Efficiency (%)", title="CO₂ Capture Efficiency Along Column")
 
-st.plotly_chart(fig3, use_container_width=True)
+st.plotly_chart(fig3, width='stretch')
 
 
 st.header("Design Space Analysis")
@@ -462,27 +457,27 @@ st.header("Design Space Analysis")
 
 try:
 
-    data=pd.read_csv(    f"training_data_{mode}.csv")
+    data=pd.read_csv(f"training_data_{mode}.csv")
 
 
-    fig4=px.scatter(    data, x="cost", y="efficiency", color="CO2_tpy", title="Cost vs Efficiency Tradeoff", labels={
+    fig4=px.scatter(data, x="cost", y="efficiency", color="CO2_tpy", title="Cost vs Efficiency Tradeoff", labels={
             "cost":"Capture Cost ($/tCO₂)", "efficiency":"Efficiency (%)"
         })
 
 
-    st.plotly_chart(    fig4, use_container_width=True)
+    st.plotly_chart(fig4, width='stretch')
 
 
-    fig5=px.scatter(    data, x="total_power_kW", y="cost", color="efficiency", title="Energy Consumption vs Cost")
+    fig5=px.scatter(data, x="total_power_kW", y="cost", color="efficiency", title="Energy Consumption vs Cost")
 
 
-    st.plotly_chart(    fig5, use_container_width=True)
+    st.plotly_chart(fig5, width='stretch')
 
 
-    fig6=px.scatter(    data, x="D", y="cost", color="efficiency", title="Absorber Diameter Effect on Cost")
+    fig6=px.scatter(data, x="D", y="cost", color="efficiency", title="Absorber Diameter Effect on Cost")
 
 
-    st.plotly_chart(    fig6, use_container_width=True)
+    st.plotly_chart(fig6, width='stretch')
 
 
 except Exception:
