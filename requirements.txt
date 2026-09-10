@@ -1,4 +1,0 @@
-streamlit==1.25.0
-numpy>=1.26,<1.27
-scipy>=1.12,<1.13
-matplotlib
