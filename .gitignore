@@ -8,3 +8,13 @@ venv/
 
 .env
 .env.*
+
+ML-PROJECT/cost_model_DAC.pkl
+ML-PROJECT/cost_model_INDUSTRIAL.pkl
+
+ML-PROJECT/efficiency_model_DAC.pkl
+
+ML-PROJECT/efficiency_model_INDUSTRIAL.pkl
+
+training_data_DAC.csv
+training_data_INDUSTRIAL.csv
