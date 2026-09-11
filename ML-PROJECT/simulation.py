@@ -17,6 +17,18 @@ rho_gas = 1.20
 mu_liquid = 0.001
 
 H_CO2 = 3.40e4
+D_CO2 = 1.9e-9
+MW_CO2 = 44.01e-3
+MW_CaOH2 = 74.09e-3
+MW_CaCO3 = 100.09e-3
+
+mu_gas = 1.8e-5
+Cp_gas = 1005.0
+gamma_CO2 = 1.30
+
+Cp_liquid = 4180.0
+
+RHO_WATER = 997.0
 
 capacity_factor = 0.85
 
@@ -60,7 +72,7 @@ MODE_DATA = {
         "rho_gas":1.20
     }
 }
-def run_full_model(mode, D=None, H=None, G=None, L=None, yCO2=None, C_NaOH0=None, V_total=None, N=None, k_caus=None, eta_eq=None, elec_price=0.10, lime_price=100):
+def run_full_model(mode, D=None, H=None, G=None, L=None, yCO2=None, C_NaOH0=None, V_total=None, N=None, k_caus=None, eta_eq=None, elec_price=0.10, lime_price=100, relative_humidity=0.50, T_in=298.15):
     mode = mode.upper()
     if mode not in MODE_DATA:
         raise ValueError("Mode must be 'DAC' or 'INDUSTRIAL'.")
@@ -96,19 +108,42 @@ def run_full_model(mode, D=None, H=None, G=None, L=None, yCO2=None, C_NaOH0=None
     vG = G / A
     vL = L / A
 
-    bubble_diameter = 0.004 + 0.0015 * np.sqrt(max(vG,1e-6))
+    bubble_diameter = np.clip((0.0035 * (max(vG, 1e-6)/0.1)** (-0.15)),0.0015,0.008)
 
-    gas_holdup = min(0.35, 0.08 * (max(vG,1e-6)/0.1)**0.6)
+    Re_G = rho_g * vG * bubble_diameter / mu_gas
+
+    gas_holdup = 0.12 * (max(vG, 1e-6) / 0.1) ** 0.55
+
+    gas_holdup = np.clip(gas_holdup, 0.01, 0.40)
 
     interfacial_area = (6 * gas_holdup / bubble_diameter)
+    Re_L = rho_liquid * vL * bubble_diameter / mu_liquid
+    Sc_L = mu_liquid / (rho_liquid * D_CO2)
 
-    kL = 1.5e-3 * (max(vL, 1e-6) / 0.05) ** 0.35
+    Sh_L = 2.0 + 0.6 * np.sqrt(max(Re_L, 1e-12)) * Sc_L ** (1.0 / 3.0)
 
+    kL = Sh_L * D_CO2 / bubble_diameter
+    k_OH = 8.0e3
+    Ha = np.sqrt(max(k_OH * C_NaOH0 * D_CO2, 1e-20)) / max(kL, 1e-12)
     kLa = kL * interfacial_area
+
+    if Ha < 0.3:
+        enhancement_factor = 1.0
+    elif Ha < 3.0:
+        enhancement_factor = np.sqrt(1.0 + (Ha ** 2))
+    else:
+        enhancement_factor = Ha
+
+    kLa_effective = kLa * enhancement_factor
 
     k_rxn = 8000
 
-    Cg0 = yCO2 * P / (R * T)
+    T_C = T_in - 273.15
+    P_sat_water = 610.94 * np.exp((17.625 * T_C) / (T_C +243.04))
+    PH2O = relative_humidity * P_sat_water
+    P_dry = max(P-PH2O, 1)
+    P_CO2_in = yCO2 * P_dry
+    Cg0 = P_CO2_in / (R*T_in)
 
     Cl0 = 0.0
 
@@ -160,7 +195,7 @@ def run_full_model(mode, D=None, H=None, G=None, L=None, yCO2=None, C_NaOH0=None
         return 0,1e9,0,{}
     friction_factor = 0.02
 
-    hydrostatic_dp = rho_g * g * H
+    hydrostatic_dp = rho_liquid * (1-gas_holdup) * g * H
 
     friction_dp = (friction_factor * (H / max(D, 0.1)) * 0.5 * rho_g * vG**2)
     distributor_dp = 1500
