@@ -102,7 +102,7 @@ if verify:
 
     with st.spinner("Running physics simulation..."):
 
-        CO2_tpy, sim_cost, sim_eff, physics = run_full_model(    mode = mode, D=D,H=H,G=G,L=L,C_NaOH0=C_NaOH0,V_total=V_total,N=N,k_caus=k_caus,eta_eq=eta_eq)
+        CO2_tpy, sim_cost, sim_eff, physics = run_full_model(mode = mode, D=D,H=H,G=G,L=L,C_NaOH0=C_NaOH0,V_total=V_total,N=N,k_caus=k_caus,eta_eq=eta_eq)
 
 if physics is not None:
 
@@ -342,13 +342,9 @@ if physics is not None:
 
         export = pd.DataFrame({
 
-            "Parameter":["Diameter","Height","Gas Flow","Liquid Flow","NaOH","Volume","CSTRs","Reaction Rate","Efficiency","CO₂ Captured","Capture Cost","Installed Cost","Pressure Drop","Total Power"
-],
+            "Parameter":["Diameter","Height","Gas Flow","Liquid Flow","NaOH","Volume","CSTRs","Reaction Rate","Efficiency","CO₂ Captured","Capture Cost","Installed Cost","Pressure Drop","Total Power"],
 
-            "Value":[D,H,G,L,C_NaOH0,V_total,N,k_caus,physics["efficiency"],physics["CO2_tpy"],physics["cost_per_t"],physics["installed_cost"],physics["pressure_drop_Pa"],physics["total_power_kW"]
-]
-
-        })
+            "Value":[D,H,G,L,C_NaOH0,V_total,N,k_caus,physics["efficiency"],physics["CO2_tpy"],physics["cost_per_t"],physics["installed_cost"],physics["pressure_drop_Pa"],physics["total_power_kW"]]})
 
         csv = export.to_csv(index=False)
 
@@ -370,68 +366,30 @@ st.divider()
 
 st.header("🔬 Process Behavior Visualization")
 
+if physics is not None:
 
-if mode=="DAC":
-    yCO2=0.00042
-else:
-    yCO2=0.12 
-def absorber_profile(D, H, G, L, C_NaOH0, yCO2):
+    z = physics["height_profile"]
 
-    import numpy as np
-    from scipy.integrate import solve_ivp  
-    R = 8.314
-    T = 298
-    P = 101325
+    Cg = physics["CO2_profile"]
 
-    A = np.pi*(D/2)**2
+    CO2_aq = physics["CO2_aq_profile"]
 
-    vG = G/A
-    vL = L/A
+    HCO3 = physics["HCO3_profile"]
 
-    kLa = 0.28*(vG/0.1)**0.7
+    CO3 = physics["CO3_profile"]
 
-    k_rxn = 8000
-    H_CO2 = 3.4e4
+    OH = physics["OH_profile"]
 
-    Cg0 = yCO2*P/(R*T)
+    Cg0 = Cg[0]
 
 
-    def model(z,y):
-
-        Cg,Cl,NaOH=y
-
-        P_CO2=Cg*R*T
-
-        C_star=P_CO2/H_CO2
-
-        transfer=0.9*kLa*(C_star-Cl)
-
-        reaction=k_rxn*Cl*(NaOH/(NaOH+1000))
-
-        return [
-            -transfer/vG, (transfer-reaction)/vL, -2*reaction/vL
-        ]
-
-
-    z=np.linspace(0,H,200)
-
-    sol=solve_ivp(    model, [0,H], [Cg0,0,C_NaOH0], t_eval=z)
-
-    return z, sol.y[0], sol.y[2], Cg0
-
-
-
-z,Cg,NaOH,Cg0 = absorber_profile(D, H, G, L, C_NaOH0, yCO2)
-
-
-profile_df=pd.DataFrame({
-
-    "Height (m)":z,
-
-    "CO2 Gas Concentration":Cg,
-
-    "NaOH Concentration":NaOH
-
+profile_df = pd.DataFrame({
+    "Height (m)": z,
+    "CO2 Gas Concentration": Cg,
+    "Dissolved CO2": CO2_aq,
+    "Bicarbonate": HCO3,
+    "Carbonate": CO3,
+    "OH Concentration": OH
 })
 
 fig1=px.line(profile_df, x="Height (m)", y="CO2 Gas Concentration", title="CO₂ Concentration Through Absorber Height")
@@ -439,18 +397,26 @@ fig1=px.line(profile_df, x="Height (m)", y="CO2 Gas Concentration", title="CO₂
 st.plotly_chart(fig1, width='stretch')
 
 
-fig2=px.line(profile_df, x="Height (m)", y="NaOH Concentration", title="NaOH Consumption Through Absorber")
+fig2 = px.line(profile_df,x="Height (m)",y="OH Concentration",title="Hydroxide Consumption Through Absorber")
+st.plotly_chart(fig2, width="stretch")
 
-st.plotly_chart(fig2, width='stretch')
 
-
-profile_df["Capture Efficiency (%)"] = (100*(1-profile_df["CO2 Gas Concentration"]/Cg0))
+profile_df["Capture Efficiency (%)"] = (100.0 * (1.0 - profile_df["CO2 Gas Concentration"] / max(Cg0, 1e-12)))
 
 
 fig3=px.line(profile_df, x="Height (m)", y="Capture Efficiency (%)", title="CO₂ Capture Efficiency Along Column")
 
 st.plotly_chart(fig3, width='stretch')
 
+
+species_df = pd.DataFrame({
+    "Height (m)": np.concatenate([z, z, z]),
+    "Concentration": np.concatenate([CO2_aq,HCO3,CO3]),
+    "Species": (["CO₂(aq)"] * len(z) + ["HCO₃⁻"] * len(z) + ["CO₃²⁻"] * len(z))})
+
+fig_species = px.line(species_df, x="Height (m)", y="Concentration", color="Species", title="Carbonate Speciation Through Absorber")
+
+st.plotly_chart(fig_species,width="stretch")
 
 st.header("Design Space Analysis")
 
@@ -460,9 +426,7 @@ try:
     data=pd.read_csv(f"training_data_{mode}.csv")
 
 
-    fig4=px.scatter(data, x="cost", y="efficiency", color="CO2_tpy", title="Cost vs Efficiency Tradeoff", labels={
-            "cost":"Capture Cost ($/tCO₂)", "efficiency":"Efficiency (%)"
-        })
+    fig4=px.scatter(data, x="cost", y="efficiency", color="CO2_tpy", title="Cost vs Efficiency Tradeoff", labels={"cost":"Capture Cost ($/tCO₂)", "efficiency":"Efficiency (%)"})
 
 
     st.plotly_chart(fig4, width='stretch')
@@ -482,4 +446,4 @@ try:
 
 except Exception:
 
-    st.warning(    "training_data.csv not found. Run data_generation.py first.")
+    st.warning("training_data.csv not found. Run data_generation.py first.")

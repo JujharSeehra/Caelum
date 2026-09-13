@@ -136,8 +136,6 @@ def run_full_model(mode, D=None, H=None, G=None, L=None, yCO2=None, C_NaOH0=None
 
     kLa_effective = kLa * enhancement_factor
 
-    k_rxn = 8000
-
     T_C = T_in - 273.15
     P_sat_water = 610.94 * np.exp((17.625 * T_C) / (T_C +243.04))
     PH2O = relative_humidity * P_sat_water
@@ -147,20 +145,43 @@ def run_full_model(mode, D=None, H=None, G=None, L=None, yCO2=None, C_NaOH0=None
 
     Cl0 = 0.0
 
-    def absorber(z,y):
-        Cg,Cl,NaOH = y
-        P_CO2 = Cg * R * T
+    K1 = 4.45e-7
+    K2 = 4.69e-11
+    Kw = 1.0e-14
+
+    k1_OH = 8.0e3
+    k2_OH = 1.0e4
+
+
+    def absorber(z, y):
+        Cg, CO2_aq, HCO3, CO3, OH = y
+        Cg = max(Cg, 0.0)
+        CO2_aq = max(CO2_aq, 0.0)
+        HCO3 = max(HCO3, 0.0)
+        CO3 = max(CO3, 0.0)
+        OH = max(OH, 0.0)
+        P_CO2 = Cg * R * T_in
         C_star = P_CO2 / H_CO2
-        transfer = kLa * max(C_star - Cl,0)
-        reaction = (k_rxn * max(Cl,0) * (max(NaOH,0)/(max(NaOH,0)+1000)))
-        dCg = -transfer / max(vG,1e-8)
-        dCl = (transfer-reaction)/max(vL,1e-8)
-        dNaOH = -2*reaction/max(vL,1e-8)
-        return [dCg, dCl, dNaOH]
+        transfer = kLa_effective * max(C_star - CO2_aq, 0.0)
+
+        r1 = k1_OH * CO2_aq * OH
+        r2 = k2_OH * HCO3 * OH
+        dCg = -transfer / max(vG, 1e-8)
+        dCO2_aq = (transfer - r1) / max(vL, 1e-8)
+        dHCO3 = (r1 - r2) / max(vL, 1e-8)
+        dCO3 = r2 / max(vL, 1e-8)
+        dOH = (-r1 - r2) / max(vL, 1e-8)
+
+        return [dCg,dCO2_aq,dHCO3,dCO3,dOH]
 
     try:
         z_eval = np.linspace(0,H,200)
-        absorber_sol = solve_ivp(absorber, [0,H], [Cg0,Cl0,C_NaOH0],method="RK45", t_eval=z_eval)
+        absorber_sol = solve_ivp(absorber, [0,H], [Cg0,0.0,0.0,0.0,C_NaOH0],method="RK45", t_eval=z_eval)
+        Cg_profile = absorber_sol.y[0]
+        CO2_aq_profile = absorber_sol.y[1]
+        HCO3_profile = absorber_sol.y[2]
+        CO3_profile = absorber_sol.y[3]
+        OH_profile = absorber_sol.y[4]
 
     except Exception:
         return 0,1e9,0,{}
@@ -265,9 +286,12 @@ def run_full_model(mode, D=None, H=None, G=None, L=None, yCO2=None, C_NaOH0=None
         "gas_holdup": gas_holdup,
         "kLa": kLa,
         "CO2_profile": Cg_profile,
-        "NaOH_profile": NaOH_profile,
-        "height_profile": z_eval
-
+        "height_profile": z_eval,
+        "CO2_aq_profile": CO2_aq_profile,
+        "HCO3_profile": HCO3_profile,
+        "CO3_profile": CO3_profile,
+        "OH_profile": OH_profile,
+        "height_profile": z_eval,
     }
 
     return (CO2_tpy, cost_per_t,efficiency, results)
