@@ -10,7 +10,6 @@ RANDOM_SEED = 42
 np.random.seed(RANDOM_SEED)
 
 ranges = {
-
     "DAC": {
         "D": (5.0, 15.0),
         "H": (25.0, 60.0),
@@ -23,9 +22,7 @@ ranges = {
         "eta_eq": (0.90, 0.99)
     },
 
-
     "INDUSTRIAL": {
-
         "D": (2.0, 8.0),
         "H": (10.0, 35.0),
         "G": (0.5, 5.0),
@@ -39,35 +36,23 @@ ranges = {
 }
 
 for mode in MODES:
-
     print("\n" + "=" * 60)
     print(f"GENERATING {mode} DATASET")
     print("=" * 60)
-
     params = ranges[mode]
-
     data = []
-
     successful = 0
     failed = 0
-
     for i in range(NUM_SAMPLES):
-
         D = np.random.uniform(*params["D"])
         H = np.random.uniform(*params["H"])
         G = np.random.uniform(*params["G"])
         L = np.random.uniform(*params["L"])
-
         C_NaOH0 = np.random.uniform(*params["C_NaOH0"])
-
         V_total = np.random.uniform(*params["V_total"])
-
         N = np.random.randint(params["N"][0], params["N"][1] + 1)
-
         k_caus = np.random.uniform(*params["k_caus"])
-
         eta_eq = np.random.uniform(*params["eta_eq"])
-
 
         try:
             (CO2_tpy, cost, efficiency, results) = run_full_model(mode=mode, D=D, H=H, G=G, L=L, C_NaOH0=C_NaOH0, V_total=V_total, N=N, k_caus=k_caus, eta_eq=eta_eq)
@@ -147,4 +132,3 @@ for mode in MODES:
 
 print("\n" + "=" * 60)
 print("DATA GENERATION COMPLETE")
-print("=" * 60)
