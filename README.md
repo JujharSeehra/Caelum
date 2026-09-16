@@ -6,13 +6,7 @@ Caelum is a carbon capture technology project focused on improving the efficienc
 
 Caelum uses **sodium hydroxide (NaOH)** and **calcium hydroxide (Ca(OH)₂)** in alkaline solutions to capture carbon dioxide through chemical absorption. The captured carbon is subsequently processed through chemical reactors to produce **calcium carbonate (CaCO₃)**.
 
-The project combines:
-
-* First-principles chemical and physical simulation
-* Machine learning prediction
-* Bayesian optimization
-* Process and economic modeling
-* Interactive Streamlit visualization
+The project combines first-principles chemical and physical simulation, machine learning prediction, bayesian optimization, process and economic modeling, and interactive Streamlit visualization
 
 The computational models are designed to investigate the performance of Caelum across different operating conditions and identify optimized reactor configurations.
 
@@ -58,138 +52,7 @@ The project uses Python libraries including:
 * Plotly
 * Streamlit
 
-# Installation
-
-Clone the repository:
-
-```bash
-git clone https://github.com/JujharSeehra/Caelum.git
-```
-
-Enter the project directory:
-
-```bash
-cd Caelum
-```
-
-## Option 1 — Automatic Installation
-
-Run:
-
-```bash
-chmod +x install.sh
-./install.sh
-```
-
-This installs the Python dependencies listed in `requirements.txt`.
-
-## Option 2 — Manual Installation
-
-Create a virtual environment:
-
-```bash
-python3 -m venv venv
-```
-
-Activate it.
-
-### macOS / Linux
-
-```bash
-source venv/bin/activate
-```
-
-### Windows
-
-```powershell
-venv\Scripts\activate
-```
-
-Then install the required packages:
-
-```bash
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-```
-
-# Step 1 — Generate Training Data
-
-Navigate into the ML project:
-
-```bash
-cd ML-PROJECT
-```
-
-Run:
-
-```bash
-python data_generation.py
-```
-
-This runs the Caelum simulation across a range of operating conditions and generates the datasets used to train the machine-learning models.
-
-The generated datasets include separate data for:
-
-* Direct Air Capture (DAC)
-* Industrial carbon capture
-
-These datasets are used by the machine-learning training and optimization process.
-
-Depending on the configuration and number of simulations, this step may take some time.
-
-# Step 2 — Train and Optimize the Machine Learning Models
-
-After training data generation has completed, run:
-
-```bash
-python ML-Optimizer.py
-```
-
-This performs several stages of computation.
-
-### Bayesian Optimization
-
-After training the models, Caelum uses Bayesian optimization to search for promising process configurations.
-
-The optimization attempts to find configurations that balance:
-
-* High carbon-capture efficiency
-* Low cost
-* Physical constraints
-
-### Physics Verification
-
-The optimized configuration is then passed back through the first-principles simulation.
-
-This provides an independent physics-based verification of the machine-learning prediction.
-
-Upon completion, the trained model files are generated locally.
-
-These model files are required by the Streamlit application.
-
-# Step 3 — Launch the Streamlit Application
-
-After `ML-Optimizer.py` has completed successfully, launch the Streamlit dashboard.
-
-From the `ML-PROJECT` directory:
-
-```bash
-streamlit run MLapp.py
-```
-
-Alternatively, from the Caelum root directory:
-
-```bash
-streamlit run ML-PROJECT/MLapp.py
-```
-
-Streamlit will provide a local URL, typically:
-
-```text
-http://localhost:8501
-```
-
-Open this address in your web browser.
+The main application and platform for viewing results can be found on Streamlit. 
 
 # Streamlit Dashboard
 
@@ -223,44 +86,6 @@ When physics verification is enabled, the dashboard additionally runs the first-
 * Operating-cost distribution
 * Power consumption
 * Process visualizations
-
-# Reproducing the Complete Workflow
-
-To reproduce Caelum from a fresh installation:
-
-```bash
-git clone https://github.com/JujharSeehra/Caelum.git
-cd Caelum
-
-chmod +x install.sh
-./install.sh
-
-cd ML-PROJECT
-
-python data_generation.py
-
-python ML-Optimizer.py
-
-streamlit run MLapp.py
-```
-
-The commands should be executed **in this order**.
-
-The reason for this sequence is that:
-
-```text
-data_generation.py
-        ↓
-creates training datasets
-
-ML-Optimizer.py
-        ↓
-trains models and performs optimization
-
-MLapp.py
-        ↓
-loads the trained models and provides the interactive dashboard
-```
 
 # Scientific Approach
 
