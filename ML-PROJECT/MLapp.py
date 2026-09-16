@@ -11,11 +11,7 @@ from simulation import run_full_model
 st.set_page_config(page_title="AI Carbon Capture Optimizer", page_icon="🏭", layout="wide")
 
 st.title("AI Carbon Capture Optimizer")
-st.markdown("""This dashboard combines:
-- Machine Learning prediction
-- First-principles process simulation
-- Economic analysis
-- Bayesian optimized design""")
+st.markdown("""This dashboard combines: - Machine Learning prediction - First-principles process simulation - Economic analysis - Bayesian optimized design""")
 
 mode = st.sidebar.selectbox("Capture Mode", ["DAC", "INDUSTRIAL"])
 st.info(f"Current Simulation Mode: {mode}")
@@ -56,31 +52,16 @@ G = st.sidebar.slider("Gas Flow (m³/s)", G_min, G_max, G_default, 0.05)
 L = st.sidebar.slider("Liquid Flow (m³/s)",L_min, L_max, L_default, 0.05)
 
 C_NaOH0 = st.sidebar.slider("NaOH Concentration (mol/m³)", C_min, C_max, C_default, 50)
-
-
 V_total = st.sidebar.slider("Causticizer Volume (m³)", V_min, V_max, V_default, 5)
-
-
 N = st.sidebar.slider("Number of CSTRs", N_min, N_max, N_default)
-
-
 k_caus = st.sidebar.slider("Reaction Rate Constant", 0.01, 1.00, 0.30, 0.01)
-
-
 eta_eq = st.sidebar.slider("Equilibrium Conversion", 0.80, 0.99, 0.90, 0.01)
-
-
 st.sidebar.divider()
-
-
 verify = st.sidebar.checkbox("Run Physics Verification", value=True)
-
-
 features = pd.DataFrame({"D":[D], "H":[H], "G":[G], "L":[L], "C_NaOH0":[C_NaOH0], "V_total":[V_total], "N":[N], "k_caus":[k_caus], "eta_eq":[eta_eq]})
 
 
 ml_cost = float(cost_model.predict(features)[0])
-
 ml_eff = float(eff_model.predict(features)[0])
 
 st.header("Machine Learning Prediction")
@@ -88,70 +69,35 @@ st.header("Machine Learning Prediction")
 metric1, metric2 = st.columns(2)
 
 with metric1:
-
     st.metric("Predicted Capture Cost", f"${ml_cost:,.2f}/tCO₂")
 
 with metric2:
-
     st.metric("Predicted Efficiency", f"{ml_eff:.2f}%")
 
 
 physics = None
 
 if verify:
-
     with st.spinner("Running physics simulation..."):
-
         CO2_tpy, sim_cost, sim_eff, physics = run_full_model(mode = mode, D=D,H=H,G=G,L=L,C_NaOH0=C_NaOH0,V_total=V_total,N=N,k_caus=k_caus,eta_eq=eta_eq)
 
 if physics is not None:
-
-    st.header("⚙️ Physics Simulation")
-
+    st.header("Physics Simulation")
     c1, c2, c3 = st.columns(3)
-
     with c1:
-
         st.metric("CO₂ Captured", f"{CO2_tpy:,.0f} t/year")
-
     with c2:
-
         st.metric("Simulation Cost", f"${sim_cost:,.2f}/tCO₂")
-
     with c3:
-
         st.metric("Simulation Efficiency", f"{sim_eff:.2f}%")
 
 if physics is not None:
 
     st.header("ML vs Physics")
-
     compare = pd.DataFrame({
-
-        "Model":[
-
-            "Machine Learning",
-
-            "Physics"
-
-        ],
-
-        "Cost":[
-
-            ml_cost,
-
-            sim_cost
-
-        ],
-
-        "Efficiency":[
-
-            ml_eff,
-
-            sim_eff
-
-        ]
-
+        "Model":["Machine Learning", "Physics"],
+        "Cost":[ml_cost, sim_cost],
+        "Efficiency":[ml_eff, sim_eff]
     })
 
     st.dataframe(compare, width='stretch')
@@ -163,62 +109,34 @@ if physics is not None:
     st.success(f"Cost Error: ${cost_error:.2f}/t    |    Efficiency Error: {eff_error:.2f}%")
 
 st.divider()
-
 st.header("Process Visualizations")
 
 cost_chart = st.container()
-
 energy_chart = st.container()
-
 power_chart = st.container()
-
 download_section = st.container()
 
 if physics is not None:
-
     with cost_chart:
-
-        st.subheader("💰 Annual Cost Breakdown")
-
+        st.subheader("Annual Cost Breakdown")
         cost_df = pd.DataFrame({
-
             "Category":["Capital Recovery", "Fixed O&M", "Electricity", "Lime", "Compression"],
-
             "Cost ($/yr)":[physics["installed_cost"]*0.1019, physics["installed_cost"]*0.05, physics["electricity_cost"], physics["lime_cost"], 35*physics["CO2_tpy"]]
-
         })
 
         fig = px.bar(
 
-            cost_df,
-
-            x="Category",
-
-            y="Cost ($/yr)",
-
-            title="Annual Operating Cost Breakdown")
+            cost_df, x="Category", y="Cost ($/yr)", title="Annual Operating Cost Breakdown")
 
         fig.update_layout(height=450)
 
         st.plotly_chart(fig, width='stretch')
 
 if physics is not None:
-
-    st.subheader("🥧 Operating Cost Distribution")
-
-    pie = px.pie(
-
-        cost_df,
-
-        values="Cost ($/yr)",
-
-        names="Category",
-
-        hole=0.45)
-
+    st.subheader("Operating Cost Distribution")
+    pie = px.pie(cost_df, values="Cost ($/yr)", names="Category", hole=0.45)
     pie.update_layout(height=500)
-
-    st.plotly_chart(    pie, width='stretch')
+    st.plotly_chart(pie, width='stretch')
 
 if physics is not None:
 
@@ -227,88 +145,22 @@ if physics is not None:
         st.subheader("⚡ Power Consumption")
 
         power_df = pd.DataFrame({
-
             "Equipment":["Pump", "Blower"],
-
             "Power (kW)":[physics["pump_power_kW"], physics["blower_power_kW"]]
-
         })
 
-        fig2 = px.bar(
-
-            power_df,
-
-            x="Equipment",
-
-            y="Power (kW)",
-
-            text="Power (kW)",
-
-            title="Equipment Power Consumption")
-
+        fig2 = px.bar(power_df, x="Equipment", y="Power (kW)", text="Power (kW)", title="Equipment Power Consumption")
         fig2.update_layout(height=450)
-
         st.plotly_chart(fig2, width='stretch')
 
 if physics is not None:
-
     st.header("Engineering Summary")
-
     summary = pd.DataFrame({
-
-        "Metric":[
-
-            "Annual CO₂ Capture",
-
-            "Capture Efficiency",
-
-            "Capture Cost",
-
-            "Pressure Drop",
-
-            "Pump Power",
-
-            "Blower Power",
-
-            "Total Power",
-
-            "Annual Energy",
-
-            "Installed Cost",
-
-            "Annual Operating Cost"
-
-        ],
-
-        "Value":[
-
-            f"{CO2_tpy:,.0f} t/year",
-
-            f"{physics['efficiency']:.2f} %",
-
-            f"${physics['cost_per_t']:.2f}/tCO₂",
-
-            f"{physics['pressure_drop_Pa']:,.0f} Pa",
-
-            f"{physics['pump_power_kW']:.2f} kW",
-
-            f"{physics['blower_power_kW']:.2f} kW",
-
-            f"{physics['total_power_kW']:.2f} kW",
-
-            f"{physics['annual_energy_kWh']:,.0f} kWh",
-
-            f"${physics['installed_cost']:,.0f}",
-
-            f"${physics['annual_cost']:,.0f}"
-
-        ]
-
+        "Metric":["Annual CO₂ Capture", "Capture Efficiency", "Capture Cost", "Pressure Drop", "Pump Power", "Blower Power", "Total Power", "Annual Energy", "Installed Cost", "Annual Operating Cost"],
+        "Value":[ f"{CO2_tpy:,.0f} t/year", f"{physics['efficiency']:.2f} %", f"${physics['cost_per_t']:.2f}/tCO₂", f"{physics['pressure_drop_Pa']:,.0f} Pa", f"{physics['pump_power_kW']:.2f} kW", f"{physics['blower_power_kW']:.2f} kW", f"{physics['total_power_kW']:.2f} kW", f"{physics['annual_energy_kWh']:,.0f} kWh", f"${physics['installed_cost']:,.0f}", f"${physics['annual_cost']:,.0f}"]
     })
 
     st.dataframe(summary,hide_index=True, width='stretch')
-
-
 if physics is not None:
 
     st.header("Design Diagnostics")
@@ -332,8 +184,6 @@ if physics is not None:
     else:
 
         st.success("Pressure drop is within a reasonable operating range.")
-
-
 if physics is not None:
 
     with download_section:
@@ -342,44 +192,27 @@ if physics is not None:
 
         export = pd.DataFrame({
 
-            "Parameter":["Diameter","Height","Gas Flow","Liquid Flow","NaOH","Volume","CSTRs","Reaction Rate","Efficiency","CO₂ Captured","Capture Cost","Installed Cost","Pressure Drop","Total Power"],
-
-            "Value":[D,H,G,L,C_NaOH0,V_total,N,k_caus,physics["efficiency"],physics["CO2_tpy"],physics["cost_per_t"],physics["installed_cost"],physics["pressure_drop_Pa"],physics["total_power_kW"]]})
+            "Parameter":["Diameter","Height","Gas Flow","Liquid Flow","NaOH","Volume","CSTRs","Reaction Rate","Efficiency","CO₂ Captured","Capture Cost","Installed Cost","Pressure Drop","Total Power"], "Value":[D,H,G,L,C_NaOH0,V_total,N,k_caus,physics["efficiency"],physics["CO2_tpy"],physics["cost_per_t"],physics["installed_cost"],physics["pressure_drop_Pa"],physics["total_power_kW"]]})
 
         csv = export.to_csv(index=False)
 
         st.download_button(
 
-            "Download Results (.csv)",
-
-            csv,
-
-            file_name="simulation_results.csv",
-
-            mime="text/csv")
+            "Download Results (.csv)", csv, file_name="simulation_results.csv", mime="text/csv")
 
 st.divider()
-
 st.caption("AI Carbon Capture Optimizer • Physics-Based Simulation + Machine Learning • Developed using Python, SciPy, Scikit-Learn and Streamlit")
-
 st.divider()
-
-st.header("🔬 Process Behavior Visualization")
+st.header("Process Behavior Visualization")
 
 if physics is not None:
 
     z = physics["height_profile"]
-
     Cg = physics["CO2_profile"]
-
     CO2_aq = physics["CO2_aq_profile"]
-
     HCO3 = physics["HCO3_profile"]
-
     CO3 = physics["CO3_profile"]
-
     OH = physics["OH_profile"]
-
     Cg0 = Cg[0]
 
 
@@ -393,7 +226,6 @@ profile_df = pd.DataFrame({
 })
 
 fig1=px.line(profile_df, x="Height (m)", y="CO2 Gas Concentration", title="CO₂ Concentration Through Absorber Height")
-
 st.plotly_chart(fig1, width='stretch')
 
 
@@ -405,14 +237,10 @@ profile_df["Capture Efficiency (%)"] = (100.0 * (1.0 - profile_df["CO2 Gas Conce
 
 
 fig3=px.line(profile_df, x="Height (m)", y="Capture Efficiency (%)", title="CO₂ Capture Efficiency Along Column")
-
 st.plotly_chart(fig3, width='stretch')
 
 
-species_df = pd.DataFrame({
-    "Height (m)": np.concatenate([z, z, z]),
-    "Concentration": np.concatenate([CO2_aq,HCO3,CO3]),
-    "Species": (["CO₂(aq)"] * len(z) + ["HCO₃⁻"] * len(z) + ["CO₃²⁻"] * len(z))})
+species_df = pd.DataFrame({"Height (m)": np.concatenate([z, z, z]), "Concentration": np.concatenate([CO2_aq,HCO3,CO3]),"Species": (["CO₂(aq)"] * len(z) + ["HCO₃⁻"] * len(z) + ["CO₃²⁻"] * len(z))})
 
 fig_species = px.line(species_df, x="Height (m)", y="Concentration", color="Species", title="Carbonate Speciation Through Absorber")
 
@@ -422,28 +250,14 @@ st.header("Design Space Analysis")
 
 
 try:
-
     data=pd.read_csv(f"training_data_{mode}.csv")
-
-
     fig4=px.scatter(data, x="cost", y="efficiency", color="CO2_tpy", title="Cost vs Efficiency Tradeoff", labels={"cost":"Capture Cost ($/tCO₂)", "efficiency":"Efficiency (%)"})
-
-
     st.plotly_chart(fig4, width='stretch')
-
-
     fig5=px.scatter(data, x="total_power_kW", y="cost", color="efficiency", title="Energy Consumption vs Cost")
-
-
     st.plotly_chart(fig5, width='stretch')
-
-
     fig6=px.scatter(data, x="D", y="cost", color="efficiency", title="Absorber Diameter Effect on Cost")
-
-
     st.plotly_chart(fig6, width='stretch')
 
 
 except Exception:
-
     st.warning("training_data.csv not found. Run data_generation.py first.")

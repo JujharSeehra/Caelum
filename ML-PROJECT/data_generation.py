@@ -12,18 +12,13 @@ np.random.seed(RANDOM_SEED)
 ranges = {
 
     "DAC": {
-
         "D": (5.0, 15.0),
         "H": (25.0, 60.0),
-
         "G": (30.0, 150.0),
         "L": (5.0, 30.0),
-
         "C_NaOH0": (1500.0, 6000.0),
         "V_total": (100.0, 500.0),
-
         "N": (3, 6),
-
         "k_caus": (0.05, 0.50),
         "eta_eq": (0.90, 0.99)
     },
@@ -33,15 +28,11 @@ ranges = {
 
         "D": (2.0, 8.0),
         "H": (10.0, 35.0),
-
         "G": (0.5, 5.0),
         "L": (0.5, 5.0),
-
         "C_NaOH0": (500.0, 3000.0),
         "V_total": (20.0, 200.0),
-
         "N": (2, 5),
-
         "k_caus": (0.05, 0.50),
         "eta_eq": (0.85, 0.97)
     }
@@ -108,47 +99,24 @@ for mode in MODES:
                 "D": D,
                 "H": H,
                 "G": G,
-                "L": L,
-
+                "L": L,    
                 "C_NaOH0": C_NaOH0,
-                "V_total": V_total,
-
-                "N": N,
-
+                "V_total": V_total,    
+                "N": N,    
                 "k_caus": k_caus,
-                "eta_eq": eta_eq,
-
+                "eta_eq": eta_eq,    
                 "CO2_tpy": CO2_tpy,
                 "cost": cost,
-                "efficiency": efficiency,
-
-                "pressure_drop_Pa":
-                    results["pressure_drop_Pa"],
-
-                "pump_power_kW":
-                    results["pump_power_kW"],
-
-                "blower_power_kW":
-                    results["blower_power_kW"],
-
-                "total_power_kW":
-                    results["total_power_kW"],
-
-                "annual_energy_kWh":
-                    results["annual_energy_kWh"],
-
-                "installed_cost":
-                    results["installed_cost"],
-
-                "annual_cost":
-                    results["annual_cost"],
-
-                "lime_cost":
-                    results["lime_cost"],
-
-                "electricity_cost":
-                    results["electricity_cost"]
-            })
+                "efficiency": efficiency,    
+                "pressure_drop_Pa":results["pressure_drop_Pa"],    
+                "pump_power_kW":results["pump_power_kW"],    
+                "blower_power_kW":results["blower_power_kW"],    
+                "total_power_kW":results["total_power_kW"],    
+                "annual_energy_kWh":results["annual_energy_kWh"],    
+                "installed_cost": results["installed_cost"],
+                "annual_cost": results["annual_cost"],    
+                "lime_cost": results["lime_cost"],    
+                "electricity_cost": results["electricity_cost"]})
             successful += 1
 
 

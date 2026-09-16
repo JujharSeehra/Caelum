@@ -142,17 +142,12 @@ def run_full_model(mode, D=None, H=None, G=None, L=None, yCO2=None, C_NaOH0=None
     P_dry = max(P-PH2O, 1)
     P_CO2_in = yCO2 * P_dry
     Cg0 = P_CO2_in / (R*T_in)
-
     Cl0 = 0.0
-
     K1 = 4.45e-7
     K2 = 4.69e-11
     Kw = 1.0e-14
-
     k1_OH = 8.0e3
     k2_OH = 1.0e4
-
-
     def absorber(z, y):
         Cg, CO2_aq, HCO3, CO3, OH = y
         Cg = max(Cg, 0.0)
@@ -163,7 +158,6 @@ def run_full_model(mode, D=None, H=None, G=None, L=None, yCO2=None, C_NaOH0=None
         P_CO2 = Cg * R * T_in
         C_star = P_CO2 / H_CO2
         transfer = kLa_effective * max(C_star - CO2_aq, 0.0)
-
         r1 = k1_OH * CO2_aq * OH
         r2 = k2_OH * HCO3 * OH
         dCg = -transfer / max(vG, 1e-8)
@@ -171,9 +165,7 @@ def run_full_model(mode, D=None, H=None, G=None, L=None, yCO2=None, C_NaOH0=None
         dHCO3 = (r1 - r2) / max(vL, 1e-8)
         dCO3 = r2 / max(vL, 1e-8)
         dOH = (-r1 - r2) / max(vL, 1e-8)
-
         return [dCg,dCO2_aq,dHCO3,dCO3,dOH]
-
     try:
         z_eval = np.linspace(0,H,200)
         absorber_sol = solve_ivp(absorber, [0,H], [Cg0,0.0,0.0,0.0,C_NaOH0],method="RK45", t_eval=z_eval)
@@ -182,10 +174,8 @@ def run_full_model(mode, D=None, H=None, G=None, L=None, yCO2=None, C_NaOH0=None
         HCO3_profile = absorber_sol.y[2]
         CO3_profile = absorber_sol.y[3]
         OH_profile = absorber_sol.y[4]
-
     except Exception:
         return 0,1e9,0,{}
-
     Cg_profile = absorber_sol.y[0]
     Cl_profile = absorber_sol.y[1]
     NaOH_profile = absorber_sol.y[2]
