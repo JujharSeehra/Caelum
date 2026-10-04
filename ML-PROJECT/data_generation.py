@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 from simulation import run_full_model
-MODES = ["DAC", "INDUSTRIAL"]
+MODES = ["INDUSTRIAL"]
 
 NUM_SAMPLES = 3000
 RANDOM_SEED = 42
@@ -10,17 +10,6 @@ RANDOM_SEED = 42
 np.random.seed(RANDOM_SEED)
 
 ranges = {
-    "DAC": {
-        "D": (5.0, 15.0),
-        "H": (25.0, 60.0),
-        "G": (30.0, 150.0),
-        "L": (5.0, 30.0),
-        "C_NaOH0": (1500.0, 6000.0),
-        "V_total": (100.0, 500.0),
-        "N": (3, 6),
-        "k_caus": (0.05, 0.50),
-        "eta_eq": (0.90, 0.99)
-    },
 
     "INDUSTRIAL": {
         "D": (2.0, 8.0),
