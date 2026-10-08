@@ -25,7 +25,6 @@ FEATURES = [
     "D", "H", "G", "L", "C_NaOH0", "V_total", "N", "k_caus", "eta_eq"
 ]
 
-# These are design constraints, not claimed industry standards.
 MIN_EFFICIENCY = {"DAC": 70.0, "INDUSTRIAL": 90.0}
 
 RANGES = {
@@ -180,17 +179,7 @@ def train_models(mode, df):
 
 def make_bounds(mode):
     r = RANGES[mode]
-    return [
-        r["D"],
-        r["H"],
-        r["G"],
-        r["L"],
-        r["C_NaOH0"],
-        r["V_total"],
-        r["N"],
-        r["k_caus"],
-        r["eta_eq"],
-    ]
+    return [r["D"],r["H"],r["G"],r["L"],r["C_NaOH0"],r["V_total"],r["N"],r["k_caus"],r["eta_eq"],]
 
 
 def vector_to_params(x):
@@ -202,10 +191,6 @@ def vector_to_params(x):
 def optimize(mode, df, cost_model, eff_model):
     bounds = make_bounds(mode)
     min_eff = MIN_EFFICIENCY[mode]
-
-    # Optimize the corrected physics/economic model directly.
-    # The random forests are retained as diagnostic surrogates and for feature importance,
-    # but the final reported optimum never depends on an ML-only prediction.
     def objective(x):
         params = vector_to_params(x)
         row = simulate_row(mode, params)

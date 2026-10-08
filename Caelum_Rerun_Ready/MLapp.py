@@ -9,7 +9,7 @@ RESULTS_DIR = ROOT / "results"
 
 st.set_page_config(
     page_title="Caelum Carbon Capture Optimizer",
-    page_icon="🌍",
+    page_icon="",
     layout="wide",
 )
 
@@ -25,10 +25,7 @@ required = [
 
 missing = [p.name for p in required if not p.exists()]
 if missing:
-    st.error(
-        "Results are missing. Run `python run_pipeline.py` first. Missing: "
-        + ", ".join(missing)
-    )
+    st.error("Results are missing. Run `python run_pipeline.py` first. Missing: " + ", ".join(missing))
     st.stop()
 
 
