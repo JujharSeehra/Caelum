@@ -22,6 +22,9 @@ The system therefore combines:
 **CO₂ absorption → chemical conversion → NaOH regeneration → CaCO₃ production**
 The computational model investigates the performance of this process under different physical, chemical, and economic conditions.
 
+# How to use
+Train the ML model found in release v1.0.0. This release also details instructions on how to quickly and easily view and train the ML model. 
+
 For questions, collaboration, or inquiries regarding Caelum:
 **Jujhar Seehra**
 **Email:** [jujharseehra@gmail.com](mailto:jujharseehra@gmail.com)
